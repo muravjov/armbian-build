@@ -916,9 +916,13 @@ prepare_host()
 		"https://dl.armbian.com/_toolchains/gcc-arm-8.3-2019.03-x86_64-aarch64-linux-gnu.tar.xz"
 		)
 
-	for toolchain in ${toolchains[@]}; do
-		download_and_verify "_toolchains" "${toolchain##*/}"
-	done
+	if [[ $WITHOUT_BUILD == yes ]]; then
+		display_alert "Skipping downloading compilers" "" "info"
+	else
+		for toolchain in ${toolchains[@]}; do
+			download_and_verify "_toolchains" "${toolchain##*/}"
+		done
+	fi
 
 	rm -rf $SRC/cache/toolchains/*.tar.xz*
 	local existing_dirs=( $(ls -1 $SRC/cache/toolchains) )

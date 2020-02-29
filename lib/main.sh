@@ -394,6 +394,10 @@ prepare_host
 
 [[ $CLEAN_LEVEL == *sources* ]] && cleaning "sources"
 
+if [[ $WITHOUT_BUILD == yes ]]; then
+	IGNORE_UPDATES=yes
+fi
+
 # ignore updates help on building all images - for internal purposes
 # fetch_from_repo <url> <dir> <ref> <subdir_flag>
 if [[ $IGNORE_UPDATES != yes ]]; then
@@ -419,39 +423,48 @@ for option in $(tr ',' ' ' <<< "$CLEAN_LEVEL"); do
 	[[ $option != sources ]] && cleaning "$option"
 done
 
-# Compile u-boot if packed .deb does not exist
-if [[ ! -f ${DEB_STORAGE}/${CHOSEN_UBOOT}_${REVISION}_${ARCH}.deb ]]; then
-	if [[ -n $ATFSOURCE ]]; then
-		compile_atf
+if [[ $WITHOUT_BUILD == yes ]]; then
+	:
+else
+	# Compile u-boot if packed .deb does not exist
+	if [[ ! -f ${DEB_STORAGE}/${CHOSEN_UBOOT}_${REVISION}_${ARCH}.deb ]]; then
+		if [[ -n $ATFSOURCE ]]; then
+			compile_atf
+		fi
+		compile_uboot
 	fi
-	compile_uboot
-fi
 
-# Compile kernel if packed .deb does not exist
-if [[ ! -f ${DEB_STORAGE}/${CHOSEN_KERNEL}_${REVISION}_${ARCH}.deb ]]; then
-	KDEB_CHANGELOG_DIST=$RELEASE
-	compile_kernel
-fi
+	# Compile kernel if packed .deb does not exist
+	if [[ ! -f ${DEB_STORAGE}/${CHOSEN_KERNEL}_${REVISION}_${ARCH}.deb ]]; then
+		KDEB_CHANGELOG_DIST=$RELEASE
+		compile_kernel
+	fi
 
-# Pack armbian-config and armbian-firmware
-if [[ ! -f ${DEB_STORAGE}/armbian-config_${REVISION}_all.deb ]]; then
-	compile_armbian-config
+	# Pack armbian-config and armbian-firmware
+	if [[ ! -f ${DEB_STORAGE}/armbian-config_${REVISION}_all.deb ]]; then
+		compile_armbian-config
 
-	FULL=""
-	REPLACE="-full"
-	[[ ! -f $DEST/debs/armbian-firmware_${REVISION}_all.deb ]] && compile_firmware
-	FULL="-full"
-	REPLACE=""
-	[[ ! -f $DEST/debs/armbian-firmware${FULL}_${REVISION}_all.deb ]] && compile_firmware
+		FULL=""
+		REPLACE="-full"
+		[[ ! -f $DEST/debs/armbian-firmware_${REVISION}_all.deb ]] && compile_firmware
+		FULL="-full"
+		REPLACE=""
+		[[ ! -f $DEST/debs/armbian-firmware${FULL}_${REVISION}_all.deb ]] && compile_firmware
+	fi
 fi
 
 overlayfs_wrapper "cleanup"
 
-# extract kernel version from .deb package
-VER=$(dpkg --info "${DEB_STORAGE}/${CHOSEN_KERNEL}_${REVISION}_${ARCH}.deb" | grep Descr | awk '{print $(NF)}')
-VER="${VER/-$LINUXFAMILY/}"
+if [[ $WITHOUT_BUILD == yes ]]; then
+	VER=LINVER
+else
+	# extract kernel version from .deb package
+	VER=$(dpkg --info "${DEB_STORAGE}/${CHOSEN_KERNEL}_${REVISION}_${ARCH}.deb" | grep Descr | awk '{print $(NF)}')
 
-UBOOT_VER=$(dpkg --info "${DEB_STORAGE}/${CHOSEN_UBOOT}_${REVISION}_${ARCH}.deb" | grep Descr | awk '{print $(NF)}')
+	UBOOT_VER=$(dpkg --info "${DEB_STORAGE}/${CHOSEN_UBOOT}_${REVISION}_${ARCH}.deb" | grep Descr | awk '{print $(NF)}')
+fi
+
+VER="${VER/-$LINUXFAMILY/}"
 
 # create board support package
 [[ -n $RELEASE && ! -f ${DEB_STORAGE}/$RELEASE/${CHOSEN_ROOTFS}_${REVISION}_${ARCH}.deb ]] && create_board_package

@@ -416,8 +416,10 @@ if [[ $IGNORE_UPDATES != yes ]]; then
 	fetch_from_repo "https://github.com/armbian/testings" "testing-reports" "branch:master"
 fi
 
-compile_sunxi_tools
-install_rkbin_tools
+if [[ $WITHOUT_BUILD != yes ]]; then
+	compile_sunxi_tools
+	install_rkbin_tools
+fi
 
 for option in $(tr ',' ' ' <<< "$CLEAN_LEVEL"); do
 	[[ $option != sources ]] && cleaning "$option"
@@ -440,17 +442,18 @@ else
 		compile_kernel
 	fi
 
-	# Pack armbian-config and armbian-firmware
-	if [[ ! -f ${DEB_STORAGE}/armbian-config_${REVISION}_all.deb ]]; then
-		compile_armbian-config
+fi
 
-		FULL=""
-		REPLACE="-full"
-		[[ ! -f $DEST/debs/armbian-firmware_${REVISION}_all.deb ]] && compile_firmware
-		FULL="-full"
-		REPLACE=""
-		[[ ! -f $DEST/debs/armbian-firmware${FULL}_${REVISION}_all.deb ]] && compile_firmware
-	fi
+# Pack armbian-config and armbian-firmware
+if [[ ! -f ${DEB_STORAGE}/armbian-config_${REVISION}_all.deb ]]; then
+	compile_armbian-config
+
+	FULL=""
+	REPLACE="-full"
+	[[ ! -f $DEST/debs/armbian-firmware_${REVISION}_all.deb ]] && compile_firmware
+	FULL="-full"
+	REPLACE=""
+	[[ ! -f $DEST/debs/armbian-firmware${FULL}_${REVISION}_all.deb ]] && compile_firmware
 fi
 
 overlayfs_wrapper "cleanup"

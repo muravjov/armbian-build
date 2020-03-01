@@ -443,7 +443,7 @@ compile_firmware()
 	[[ -d $SRC/cache/sources/$plugin_dir ]] && rm -rf $SRC/cache/sources/$plugin_dir
 	mkdir -p $SRC/cache/sources/$plugin_dir/lib/firmware
 
-	fetch_from_repo "https://github.com/armbian/firmware" "armbian-firmware-git" "branch:master"
+	fetch_from_repo "https://github.com/muravjov/firmware" "armbian-firmware-git" "branch:master"
 	if [[ -n $FULL ]]; then
 		fetch_from_repo "$plugin_repo" "linux-firmware-git" "branch:master"
 		# cp : create hardlinks

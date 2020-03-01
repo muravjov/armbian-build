@@ -196,9 +196,105 @@ install_common()
 	EOF
 
 	# install kernel and u-boot packages
-	install_deb_chroot "${DEB_STORAGE}/${CHOSEN_KERNEL}_${REVISION}_${ARCH}.deb"
-	install_deb_chroot "${DEB_STORAGE}/${CHOSEN_UBOOT}_${REVISION}_${ARCH}.deb"
+	if [[ $WITHOUT_BUILD == yes ]]; then
+		if [[ $BOARD == bananapir64 ]]; then
 
+			kernel_link=https://github.com/frank-w/BPI-R2-4.14/releases/download/CI-BUILD-20200225_203315-c075525e6/linux-image-5.4.22-bpi-r64-main_5.4.22-bpi-r64-main-2_arm64.deb
+			[[ ! -z $KERNEL_LINK ]] && kernel_link=$KERNEL_LINK
+
+			kern_deb_path="$kernel_link"
+
+			http_re='^https?://'
+			if [[ ${kernel_link} =~ ${http_re} ]] ; then
+				wget -P $SRC/.tmp -q $kernel_link
+				kern_deb_path=$SRC/.tmp/$(basename "$kernel_link")
+			fi
+
+			install_deb_chroot "$kern_deb_path"
+
+			uEnvPath=$SDCARD/boot/bananapi/bpi-r64/linux/uEnv.txt
+
+			cat > "${uEnvPath}" <<-'EOF'
+			#
+			## uEnv.txt
+			#
+			bpi=bananapi
+			board=bpi-r64
+			chip=mt7622
+			service=linux
+			#
+			##
+			#
+			kernel=uImage
+			kernel=uImage_5.4
+			#
+			##
+			#
+			kaddr=0x44000000
+			rdaddr=0x46000000
+			dtaddr=0x47000000
+			#
+			##
+			#
+			#root=/dev/ram
+			root=/dev/mmcblk1p2 rootfstype=ext4 rootwait
+			console=ttyS0,115200n1 earlyprintk
+			bootopts=debug=7 initcall_debug=0 androidboot.hardware=mt7622 swiotlb=512
+			#
+			##
+			#
+			abootargs=setenv bootargs board=${board} console=${console} root=${root} service=${service} ${bootopts}
+			#
+			##
+			#
+			ahello=echo Banana Pi ${board} chip: $chip Service: $service
+			#
+			##
+			#
+			aboot=if fatload $device $partition $rdaddr ${bpi}/berryboot.img; then bootm $kaddr $rdaddr ; else bootm $kaddr - $dtaddr ; fi
+			#
+			##
+			#
+			aload_fdt=fatload $device $partition $dtaddr ${bpi}/${board}/${service}/dtb/${fdt}
+			#
+			##
+			#
+			aload_kernel=fatload $device $partition $kaddr ${bpi}/${board}/${service}/${kernel}
+			#
+			##
+			#
+			uenvcmd=run ahello abootargs aload_fdt aload_kernel aboot
+			#
+			## END
+			#
+			ipaddr=192.168.0.19
+			netmask=255.255.255.0
+			serverip=192.168.0.10
+			bootfile=uImage_5.4.0-rc1-r64
+			bootdtbfile=5.4.0-rc1-r64.dtb
+			bootfile=uImage_5.4.0-r64-main_mt7531-sata
+			bootdtbfile=5.4.0-r64-main_mt7531-sata.dtb
+			bootnet=run abootargs;tftp $kaddr ${bootfile};tftp $dtaddr ${bootdtbfile};bootm $kaddr - $dtaddr
+
+			ufile=u-boot-r64-2019-10.bin
+			uaddr=0x41E00000
+			umtkaddr=0x41dffe00
+			ubootnet=tftp ${umtkaddr} ${ufile};go $uaddr
+			EOF
+
+			# 5.4.22-bpi-r64-main
+			kern_version=$(dpkg --info "$kern_deb_path" | grep Descr | awk '{print $(NF)}')
+
+			cat >> "${uEnvPath}" <<-EOF
+
+			kernel=uImage_nodt-${kern_version}
+			fdt=bpi-r64-${kern_version}.dtb
+			EOF
+		fi
+	else
+		install_deb_chroot "${DEB_STORAGE}/${CHOSEN_KERNEL}_${REVISION}_${ARCH}.deb"
+		install_deb_chroot "${DEB_STORAGE}/${CHOSEN_UBOOT}_${REVISION}_${ARCH}.deb"
+	fi
 
 	if [[ $BUILD_DESKTOP == yes ]]; then
 		install_deb_chroot "${DEB_STORAGE}/$RELEASE/armbian-${RELEASE}-desktop_${REVISION}_all.deb"

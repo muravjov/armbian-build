@@ -23,6 +23,7 @@ deploy:
   file: 
   #- sdcard.raw.zip
   - Armbian_20.05.0-trunk_Bananapir64_buster.img.zip
+  - output/debug/install.log
   skip_cleanup: true
   on:
     repo: muravjov/armbian-build

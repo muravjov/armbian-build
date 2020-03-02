@@ -3,15 +3,25 @@ sudo: required
 addons:
   apt:
     packages:
-      - qemu
-      - qemu-user-static
-      - binfmt-support
-      - parted
-      - wget
-      - dosfstools
-      - zip
-      - parted
-      - pv
+    - qemu
+    - qemu-user-static
+    - binfmt-support
+    - parted
+    - wget
+    - dosfstools
+    - zip
+    - parted
+    - pv
 script:
-  - sudo bash ./test_losetup.sh
-  - zip sdcard.raw.zip sdcard.raw
+- sudo bash ./test_losetup.sh
+- zip sdcard.raw.zip sdcard.raw
+deploy:
+  provider: releases
+  api_key:
+    secure: g4fjeZ0iAA/Zf0n08boVJuqCMkXjnkpSwXvcyLqTGcArSoTmW01Avp2Mr3Trkof0/NH8Mx1y3Xy4GNO0kwJ9tth7ZH7c7h8pfeRz2dj9okki/DOM1cNhBFl+Q2ty/P8mPKemGx7IN/mrw6nvUw/QL6dOASoM+2T1pqxJVA+P0Wk3U0atdlArgUS1k0/aWC2Ld90I0D7fiW1ui+NbCAuC5xhfaVNx8cjdWPE7jp41R79G5nxlcusf4+0eJUnfnKIKJMNJZaKiSts7VxXtAoVy1m7UEFctk6GrDTBSCTmMDS0dS0HRZuDUWn2a2DLOrN3PJ3TYL7eii1QOSuqeeb8E6IjrQEFn0tFzDg2TEb0KWwUOSBlOonvAPEZC2+NNc/tWNfSBfjIObHa8n+sJsdZdOTxEa0mg/HmNRb93yuyZ2OXA0tvnzWrSr6FrDhUOomB+MmR8dXbZ7luPxqz6ySJVaVs+/VMoPN/eCtl3+fz8o/jQ0cZTPbYxHdNrQgPXhZlqdihC21ZghB/KkvYAzfaAT45HlAOWIOW96nvXpHoLi/nClhQ2axcnEU1Fv+7ejfRZXnuuSsflyJBjSn5vyhg/rjYDn/VMm3n45q+eokNrzw6tygCXtEHhZsNE7T5bg8LJBJhUdkfpvrNZo3i0hGFyLP+s3h6zQODXDXNxahliUf4=
+  file: 
+  - sdcard.raw.zip
+  skip_cleanup: true
+  on:
+    repo: muravjov/armbian-build
+    tags: true

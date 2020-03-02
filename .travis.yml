@@ -1,0 +1,17 @@
+dist: bionic
+sudo: required
+addons:
+  apt:
+    packages:
+      - qemu
+      - qemu-user-static
+      - binfmt-support
+      - parted
+      - wget
+      - dosfstools
+      - zip
+      - parted
+      - pv
+script:
+  - sudo bash ./test_losetup.sh
+  - zip sdcard.raw.zip sdcard.raw

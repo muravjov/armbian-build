@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 SRC="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 
 # display_alert
@@ -47,10 +49,11 @@ add_wireguard()
 	fi
 }
 
+kerneldir=$1
+[[ -z $kerneldir ]] && exit_with_error "Usage: add_wireguard.sh path_to_kernel_sources"
+
 main()
 {
-	#local kerneldir="$SRC/cache/sources/$LINUXSOURCEDIR"
-	local kerneldir="/home/ilya/opt/bpi-r64/BPI-R2-4.14"
 	cd "$kerneldir"
 
 	if ! grep -qoE '^-rc[[:digit:]]+' <(grep "^EXTRAVERSION" Makefile | head -1 | awk '{print $(NF)}'); then
@@ -59,9 +62,7 @@ main()
 
 	local version=$(grab_version "$kerneldir")
 
-	echo "!!!"
-	echo "$version"
-	echo "!!!"
+	echo "Trying to patch kernel version=$version ..."
 
 	add_wireguard
 }

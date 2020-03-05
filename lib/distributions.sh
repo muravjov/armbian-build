@@ -199,7 +199,7 @@ install_common()
 	if [[ $WITHOUT_BUILD == yes ]]; then
 		if [[ $BOARD == bananapir64 ]]; then
 
-			kernel_link=https://github.com/frank-w/BPI-R2-4.14/releases/download/CI-BUILD-20200225_203315-c075525e6/linux-image-5.4.22-bpi-r64-main_5.4.22-bpi-r64-main-2_arm64.deb
+			kernel_link=https://github.com/frank-w/BPI-R2-4.14/releases/download/CI-BUILD-20200304_171644-1beb6809a/linux-image-5.4.22-bpi-r64-main_5.4.22-bpi-r64-main-2_arm64.deb
 			[[ ! -z $KERNEL_LINK ]] && kernel_link=$KERNEL_LINK
 
 			kern_deb_path="$kernel_link"
